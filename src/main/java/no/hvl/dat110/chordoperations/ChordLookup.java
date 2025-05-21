@@ -39,13 +39,29 @@ public class ChordLookup {
 		// check that key is a member of the set {nodeid+1,...,succID} i.e. (nodeid+1 <= key <= succID) using the checkInterval
 		
 		// if logic returns true, then return the successor
-		
+
 		// if logic returns false; call findHighestPredecessor(key)
-		
+			
 		// do highest_pred.findSuccessor(key) - This is a recursive call until logic returns true
-				
-		return null;					
+		
+	    NodeInterface successor = node.getSuccessor();
+
+	    BigInteger nodeID = node.getNodeID();
+	    BigInteger succID = successor.getNodeID();
+
+	    if (Util.checkInterval(key, nodeID.add(BigInteger.ONE), succID.add(BigInteger.ONE))) {
+	        return successor;
+	    }
+
+	    NodeInterface nextNode = findHighestPredecessor(key);
+
+	    if (nextNode.getNodeName().equals(node.getNodeName())) {
+	        return successor;
+	    }
+
+	    return nextNode.findSuccessor(key);
 	}
+	
 	
 	/**
 	 * This method makes a remote call. Invoked from a local client
@@ -65,7 +81,26 @@ public class ChordLookup {
 		
 		// if logic returns true, then return the finger (means finger is the closest to key)
 		
-		return (NodeInterface) node;			
+	    List<NodeInterface> fingers = node.getFingerTable();
+	    BigInteger nodeID = node.getNodeID();
+
+	    for (int i = fingers.size() - 1; i >= 0; i--) {
+	        try {
+	            NodeInterface finger = fingers.get(i);
+
+	            if (finger != null) {
+	                BigInteger fingerID = finger.getNodeID();
+
+	                if (Util.checkInterval(fingerID, nodeID.add(BigInteger.ONE), ID)) {
+	                    return finger;
+	                }
+	            }
+	        } catch (Exception e) {
+	            continue;
+	        }
+	    }
+
+	    return node;
 	}
 	
 	public void copyKeysFromSuccessor(NodeInterface succ) {
